@@ -14,6 +14,7 @@ class App:
     register_entries_svars: list[Tk.StringVar] = []
 
     run_button: Tk.Button
+    step_button: Tk.Button
 
     def __init__(self) -> None:
         self.cpu: CPU = CPU.CPU(self)
@@ -56,6 +57,8 @@ class App:
 
         self.run_button = Tk.Button(text="run", command=self.cpu.start_cpu_run)
         self.run_button.place(x=200, y=400)
+        self.run_button = Tk.Button(text="step", command=self.cpu.step)
+        self.run_button.place(x=200, y=420)
         
 
 

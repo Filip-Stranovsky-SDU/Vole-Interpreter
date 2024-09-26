@@ -6,36 +6,39 @@ class CPU:
     memory: list[int] = [0]*256
     pc: int = 0 #Program Counter
     is_running: bool = False
-    op_code_fucntions = [seload_m_r, load_v_r, store_r_m, mo]
 
     def __init__(self, program):
         self.program = program
         
-        self.op_code_fucntions = [self.load_m_r, self.load_v_r, self.store_r_m,
-                                  self.move_r_r, self.addi, self.addf,
-                                  self.bw_or, self.bw_and, self.bw_xor,
-                                  self.bw_ror, self.jmp_eq, self.halt,
-                                  self.load_rm_r, self.store_r_rm, self.jmp_le]
+        self.op_code_fucntions: List[function] = [self.load_m_r, self.load_v_r, self.store_r_m,
+                                                self.move_r_r, self.addi, self.addf,
+                                                self.bw_or, self.bw_and, self.bw_xor,
+                                                self.bw_ror, self.jmp_eq, self.halt,
+                                                self.load_rm_r, self.store_r_rm, self.jmp_le]
 
     
     def parse_instruction(self, memory_adress: int) -> list[int]:
-        pass
+        current_memory_val = self.memory[memory_adress]
+        next_memory_val = self.memory[memory_adress + 1]
+
+        return [current_memory_val>>4, current_memory_val%16, next_memory_val>>4, next_memory_val%16]
 
 
     def step(self):
         instruction = self.parse_instruction(self.pc)
         self.pc = self.pc + 2
 
-        match(instruction[0]):
-            case 1:
-                pass
+        self.op_code_fucntions[instruction[0]](instruction)
 
-
+        print(self.registers)
+        
 
     def run(self):
         self.step()
         if self.is_running:
             self.program.canvas.after(1000, self.run)
+
+        
     
     def start_cpu_run(self):
         if not self.is_running:
@@ -103,7 +106,6 @@ class CPU:
             result = result >> 1
             self.registers[instruction[3]] = self.registers[instruction[3]] + 16
         self.registers[instruction[3]] = self.registers[instruction[3]] + result
-
 
     def bw_or(self, instruction):
         #7RST
