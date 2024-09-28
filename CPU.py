@@ -10,7 +10,7 @@ class CPU:
     def __init__(self, program):
         self.program = program
         
-        self.op_code_fucntions: List[function] = [self.load_m_r, self.load_v_r, self.store_r_m,
+        self.op_code_fucntions: List[function] = [None, self.load_m_r, self.load_v_r, self.store_r_m,
                                                 self.move_r_r, self.addi, self.addf,
                                                 self.bw_or, self.bw_and, self.bw_xor,
                                                 self.bw_ror, self.jmp_eq, self.halt,
@@ -36,9 +36,7 @@ class CPU:
     def run(self):
         self.step()
         if self.is_running:
-            self.program.canvas.after(1000, self.run)
-
-        
+            self.program.canvas.after(1000, self.run)      
     
     def start_cpu_run(self):
         if not self.is_running:
@@ -47,38 +45,44 @@ class CPU:
         else:
             self.is_running = False
 
+
     ## SECTION OF INDIVIDUAL INSTRUCTIONS:
     def load_m_r(self, instruction):
         #1RXY
         #load R, [XY]
         #register[R] = XY
         self.registers[instruction[1]] = self.memory[instruction[2]*16 + instruction[3]]
+        self.program.change_register_ui_val(instruction[1])
     
     def load_v_r(self, instruction):
         #2RXY
         #load R, [XY]
         #register[R] := XY
         self.registers[instruction[1]] = instruction[2]*16 + instruction[3]
+        self.program.change_register_ui_val(instruction[1])
 
     def store_r_m(self, instruction):
         #3RXY
         #store R, [XY]
         #memory[XY] := register[R]
         self.memory[instruction[2]*16 + instruction[3]] = self.registers[instruction[1]]
-    
+        self.change_memory_ui_val(instruction[2]*16 + instruction[3])
+
     def move_r_r(self, instruction):
         #40RS
         #move S, R
         #register[S] := register[R]
         self.registers[instruction[3]] = self.registers[instruction[2]]
-    
+        self.program.change_register_ui_val(instruction[3], self.registers[instruction[3]])
+
     def addi(self, instruction):
         #5RST
         #addi R,S,T
         #register[R] := register[S] + register[T]
-        self.registers[instruction[3]] = self.registers[instruction[1]] + self.registers[instruction[2]]
+        self.registers[instruction[1]] = self.registers[instruction[2]] + self.registers[instruction[3]]
 
-        self.registers[instruction[3]] = self.registers[instruction[3]] % 256
+        self.registers[instruction[1]] = self.registers[instruction[1]] % 256
+        self.program.change_register_ui_val(instruction[1])
 
     def addf(self, instruction):
         #6RST
@@ -106,25 +110,29 @@ class CPU:
             result = result >> 1
             self.registers[instruction[3]] = self.registers[instruction[3]] + 16
         self.registers[instruction[3]] = self.registers[instruction[3]] + result
+        self.program.change_register_ui_val(instruction[3])
 
     def bw_or(self, instruction):
         #7RST
         #or R,S,T
         #register[R] := register[S] or register[T]
         self.registers[instruction[3]] = self.registers[instruction[1]] | self.registers[instruction[2]]
+        self.program.change_register_ui_val(instruction[3])
 
     def bw_and(self, instruction):
         #8RST
         #and R,S,T
         #register[R] := register[S] and register[T]
         self.registers[instruction[3]] = self.registers[instruction[1]] & self.registers[instruction[2]]
-    
+        self.program.change_register_ui_val(instruction[3])
+
     def bw_xor(self, instruction):
         #9RST
         #xor R,S,T
         #register[R] := register[S] xor register[T]
         self.registers[instruction[3]] = self.registers[instruction[1]] ^ self.registers[instruction[2]]
-    
+        self.program.change_register_ui_val(instruction[3])
+
     def bw_ror(self, instruction):
         #AR0X
         #ror R,X
@@ -132,6 +140,7 @@ class CPU:
         n = self.registers[instruction[1]]
         d = instruction[3]
         self.registers[instruction[1]] = (n >> d)|(n << (8 - d)) & 0xFF
+        self.program.change_register_ui_val(instruction[1])
 
     def jmp_eq(self, instruction):
         #BRXY
@@ -150,12 +159,14 @@ class CPU:
         #load R,[S]
         #register[r] := memory[register[s]]
         self.registers[instruction[2]] = self.memory[self.registers[instruction[3]]]
-    
+        self.program.change_register_ui_val(instruction[2])
+
     def store_r_rm(self, instruction):
         #E0RS
         #store R,[S]
         #memory[register[s]] := register[r]
         self.memory[self.registers[instruction[3]]] = self.registers[instruction[2]]
+        self.cpu.change_memory_ui_val(self.registers[instruction[3]])
 
     def jmp_le(self, instruction):
         #FRXY

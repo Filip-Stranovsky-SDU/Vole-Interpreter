@@ -95,6 +95,15 @@ class App:
         
         self.cpu.registers[address] = temp
 
+
+    def change_memory_ui_val(self, address):
+        new_val = hex(self.cpu.memory[address])[2:]
+        self.memory_entries_svars[address].set(new_val)
+
+    def change_register_ui_val(self, address):
+        new_val = hex(self.cpu.registers[address])[2:]
+        self.register_entries_svars[address].set(new_val)
+
 def main():
     app = App()
 
