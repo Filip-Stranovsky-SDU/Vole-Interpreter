@@ -16,6 +16,10 @@ class App:
     run_button: Tk.Button
     step_button: Tk.Button
 
+    allowed_characters = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                          'A', 'B', 'C', 'D', 'E', 'F',
+                          'a', 'b', 'c', 'd', 'e', 'f'}
+
     def __init__(self) -> None:
         self.cpu: CPU = CPU.CPU(self)
 
@@ -65,7 +69,10 @@ class App:
     def check_entry_string_memory(self, var, index, mode) -> None:
         address: int = int(var[9:])
         svar: Tk.StringVar = self.memory_entries_svars[address]
-    
+
+        print(svar.get())
+        return
+
         try: 
             temp: int = int(svar.get(), 16)
         except ValueError:
