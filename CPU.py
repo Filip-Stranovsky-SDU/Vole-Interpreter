@@ -1,4 +1,5 @@
 from typing import List
+import assembler
 
 class CPU:
 
@@ -15,6 +16,16 @@ class CPU:
                                                 self.bw_or, self.bw_and, self.bw_xor,
                                                 self.bw_ror, self.jmp_eq, self.halt,
                                                 self.load_rm_r, self.store_r_rm, self.jmp_le]
+        
+        self.compile_code()
+
+
+    def compile_code(self) -> None:
+        asm = assembler.Assembler()
+        instructions = asm.compile("instructions.txt")
+        for i, val in instructions:
+            self.memory[i] = val
+            self.program.change_memory_ui_val(i)
 
     
     def parse_instruction(self, memory_adress: int) -> list[int]:
