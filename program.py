@@ -24,6 +24,9 @@ class App:
 
         self.create_ui()
         self.canvas.pack()
+
+        self.cpu.compile_code()
+
         self.canvas.bind("<Button-1>", self.click)
         self.canvas.mainloop()
 
@@ -36,7 +39,8 @@ class App:
                 
                 self.memory_texts.append(new_text)
                 
-                new_text.insert("1.0", f"{hex(j)[2:]}{hex(i)[2:]}")
+                #new_text.insert("1.0", f"{hex(j)[2:]}{hex(i)[2:]}")
+                new_text.insert("1.0", f"00")
 
     def create_register_entries(self) -> None:
         for i in range(0, 16):
@@ -47,8 +51,8 @@ class App:
 
             self.register_texts.append(new_text)
 
-            new_text.insert("1.0", f"r{hex(i)[2:]}")
-            
+            #new_text.insert("1.0", f"r{hex(i)[2:]}")
+            new_text.insert("1.0", f"00")
 
 
     def create_ui(self) -> None:

@@ -11,19 +11,18 @@ class CPU:
     def __init__(self, program):
         self.program = program
         
-        self.op_code_fucntions: List[function] = [None, self.load_m_r, self.load_v_r, self.store_r_m,
+        self._op_code_fucntions: List[function] = [None, self.load_m_r, self.load_v_r, self.store_r_m,
                                                 self.move_r_r, self.addi, self.addf,
                                                 self.bw_or, self.bw_and, self.bw_xor,
                                                 self.bw_ror, self.jmp_eq, self.halt,
                                                 self.load_rm_r, self.store_r_rm, self.jmp_le]
         
-        self.compile_code()
 
 
     def compile_code(self) -> None:
         asm = assembler.Assembler()
         instructions = asm.compile("instructions.txt")
-        for i, val in instructions:
+        for i, val in enumerate(instructions):
             self.memory[i] = val
             self.program.change_memory_ui_val(i)
 
@@ -37,11 +36,10 @@ class CPU:
 
     def step(self):
         instruction = self.parse_instruction(self.pc)
+        print(self.pc)
         self.pc = self.pc + 2
 
-        self.op_code_fucntions[instruction[0]](instruction)
-
-        print(self.registers)
+        self._op_code_fucntions[instruction[0]](instruction)
         
 
     def run(self):
@@ -77,7 +75,7 @@ class CPU:
         #store R, [XY]
         #memory[XY] := register[R]
         self.memory[instruction[2]*16 + instruction[3]] = self.registers[instruction[1]]
-        self.change_memory_ui_val(instruction[2]*16 + instruction[3])
+        self.program.change_memory_ui_val(instruction[2]*16 + instruction[3])
 
     def move_r_r(self, instruction):
         #40RS

@@ -13,7 +13,7 @@ class Assembler:
                                                   "xor": self.manage_bw_add,
                                                   "and": self.manage_bw_add,
                                                   "ror": self.manage_ror,
-                                                  "jmpEQ": self.manage_jump,
+                                                  "jmpEq": self.manage_jump,
                                                   "jmpLE": self.manage_jump,
                                                   "halt": self.manage_halt
                                                 }
@@ -22,8 +22,10 @@ class Assembler:
         with open(text_file, 'r') as f:
             lines = f.readlines()
         output: List[int] = []
-
+        
         for line in lines:
+            if line[0:2] == "//":
+                continue
             line = line.strip()
             instruction = line.split(' ')
             output = output + self.instructions[instruction[0]](instruction)
@@ -40,9 +42,9 @@ class Assembler:
         operand = operand_vals[instruction[0]]
 
         registers = instruction[1].split(",")
-        r = int(registers[0], 16)
-        s = int(registers[1], 16)
-        t = int(registers[2], 16)
+        r = int(registers[0][1], 16)
+        s = int(registers[1][1], 16)
+        t = int(registers[2][1], 16)
         return [operand*16+r, s*16+t]
     
     def manage_ror(self, instruction):
@@ -64,27 +66,25 @@ class Assembler:
             op = 15
 
         info = instruction[1].split(",")
-
         return [op*16+int(info[0][1], 16), int(info[1], 16)]
     
     def manage_store(self, instruction):
         info = instruction[1].split(",")
-
         if len(info[1]) == 3:
-            return [14*16, int(info[0], 16)*16 + int(info[0][1], 16)]
+            return [14*16, int(info[0], 16)*16 + int(info[1][1], 16)]
         
-        return [3*16 + int(info[0], 16), int(info[0][1:3], 16)]
+        return [3*16 + int(info[0][1], 16), int(info[1][1:3], 16)]
     
     def manage_load(self, instruction):
         info = instruction[1].split(",")
-        
         #2
         if not '[' in info[1]:
-            return [32 + int(info[0], 16), int(info[1], 16)]
+            return [32 + int(info[0][1], 16), int(info[1], 16)]
+
         
         #D  
-        if len(info[1]) == 3:
-            return [13*16, int(info[0], 16)*16 + int(info[1][1], 16)]
+        if len(info[1]) == 4:
+            return [13*16, int(info[0][1], 16)*16 + int(info[1][2], 16)]
         
         #1
-        return [16 + int(info[0], 16), int(info[1][1:3], 16)] 
+        return [16 + int(info[0][1], 16), int(info[1][2:3], 16)] 
