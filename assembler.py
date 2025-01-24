@@ -39,6 +39,25 @@ class Assembler:
         text = re.sub(r'^\s*$', '', text, flags=re.MULTILINE)
         # Optionally remove leftover newlines from empty lines
         text = re.sub(r'\n+', '\n', text)
+
+        #Remove leading whitespaces at the start of each line
+        text = re.sub(r'^\s+', '', text, flags=re.MULTILINE)
+
+        word_dict = {}
+        lines = text.splitlines()  # Split the text into lines
+
+        def replace_and_store(match):
+            # Extract the word and the line it's found in
+            word = match.group(1)  # Word before the colon
+            current_line = len(replaced_lines) + 1  # Line number in the original text
+            word_dict[word] = current_line  # Add to dictionary
+            return match.group(2)  # Remove the word and spaces before the colon
+
+        replaced_lines = [
+            re.sub(r'^(\w+)\s*:(.*)', replace_and_store, line)
+            for line in lines
+        ]
+
         
         lines = text.split("\n")
         output: List[int] = []
