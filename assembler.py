@@ -1,10 +1,11 @@
 from typing import List, Dict
+import re
 
 class Assembler:
 
 
     def __init__(self) -> None:
-        self.instructions: Dict[str, callable] = {"load": self.manage_load,
+        self._instructions: Dict[str, callable] = {"load": self.manage_load,
                                                   "move": self.manage_move,
                                                   "addi": self.manage_bw_add,
                                                   "addf": self.manage_bw_add,
@@ -20,15 +21,32 @@ class Assembler:
 
     def compile(self, text_file) -> List[int]:
         with open(text_file, 'r') as f:
-            lines = f.readlines()
-        output: List[int] = []
+            text = f.read()
+
+
+        # Remove block comments (/* */)
+        text = re.sub(r'/\*.*?\*/', '', text, flags=re.DOTALL)
+    
+        # Remove line comments (// to end of line)
+        text = re.sub(r'//.*', '', text)
+    
+        # Remove whitespaces between a colon (:) and the next character
+        text = re.sub(r':\s+', ':', text)
+        # Remove trailing whitespaces at the end of each line (before \n)
+        text = re.sub(r'[ \t]+$', '', text, flags=re.MULTILINE)
+
+        # Remove empty lines or lines with only whitespace
+        text = re.sub(r'^\s*$', '', text, flags=re.MULTILINE)
+        # Optionally remove leftover newlines from empty lines
+        text = re.sub(r'\n+', '\n', text)
         
+        lines = text.split("\n")
+        output: List[int] = []
+
         for line in lines:
-            if line[0:2] == "//":
-                continue
             line = line.strip()
             instruction = line.split(' ')
-            output = output + self.instructions[instruction[0]](instruction)
+            output = output + self._instructions[instruction[0]](instruction)
 
         return output
     
