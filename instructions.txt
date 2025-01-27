@@ -1,4 +1,20 @@
-xor R1,R1,R1
+xor R1,R1,R1 //Total sum
+load R8,$A0 //Counter
+load R0,$A3 //Amount of values to sum
+load R7,$1 //increment
+
+_loop:  
+  load R6,[R8] //current vlaue
+addi R1,R1,R6 //add value to total
+addi R8,R8,R7 //Increment the counter
+jmpEq R8=R0,_exitLoop
+jmp _loop
+
+ _exitLoop  : store R1,[$A3]
+halt
+
+
+/*xor R1,R1,R1
 load R8,A0
 load R0,A3
 load R7,1
@@ -8,4 +24,4 @@ addi R8,R8,R7
 jmpEq R8=R0,12
 jmpEq R0=R0,08
 store R1,[A3]
-halt
+halt*/

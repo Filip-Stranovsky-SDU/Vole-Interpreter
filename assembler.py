@@ -3,6 +3,8 @@ import re
 
 class Assembler:
 
+    
+    bw_operand_vals: Dict[str, int] = {"or": 7, "and": 8, "xor": 9, "addi": 5, "addf": 6}
 
     def __init__(self) -> None:
         self._instructions: Dict[str, callable] = {"load": self.manage_load,
@@ -43,28 +45,30 @@ class Assembler:
         #Remove leading whitespaces at the start of each line
         text = re.sub(r'^\s+', '', text, flags=re.MULTILINE)
 
-        word_dict = {}
+        label_dict: Dict[str, int] = {}
         lines = text.splitlines()  # Split the text into lines
 
-        def replace_and_store(match):
-            # Extract the word and the line it's found in
-            word = match.group(1)  # Word before the colon
-            current_line = len(replaced_lines) + 1  # Line number in the original text
-            word_dict[word] = current_line  # Add to dictionary
-            return match.group(2)  # Remove the word and spaces before the colon
 
-        replaced_lines = [
-            re.sub(r'^(\w+)\s*:(.*)', replace_and_store, line)
-            for line in lines
-        ]
+        replaced_lines: List[str] = []
+        for i, line in enumerate(lines):
+            match = re.match(r'^([^:]+):\s*(.*)', line)
+            if match:
+                key = match.group(1).strip()  # Group 1: Before the colon
+                value = match.group(2).strip()  # Group 2: After the colon
+                label_dict[key] = i  # Store in dictionary
+            else:
+                value = line
+            replaced_lines.append(value)
 
-        
-        lines = text.split("\n")
+
         output: List[int] = []
 
-        for line in lines:
+        for line in replaced_lines:
             line = line.strip()
             instruction = line.split(' ')
+            for i in range(1, 4):
+                if instruction[i] in label_dict:
+                    instruction[i] = label_dict[instruction[i]]
             output = output + self._instructions[instruction[0]](instruction)
 
         return output
@@ -75,8 +79,7 @@ class Assembler:
         return [192, 00]
 
     def manage_bw_add(self, instruction):
-        operand_vals: Dict[str, int] = {"or": 7, "and": 8, "xor": 9, "addi": 5, "addf": 6}
-        operand = operand_vals[instruction[0]]
+        operand = self.bw_operand_vals[instruction[0]]
 
         registers = instruction[1].split(",")
         r = int(registers[0][1], 16)
