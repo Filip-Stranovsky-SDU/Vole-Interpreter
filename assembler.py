@@ -5,6 +5,7 @@ class Assembler:
 
     
     bw_operand_vals: Dict[str, int] = {"or": 7, "and": 8, "xor": 9, "addi": 5, "addf": 6}
+    label_dictionary: Dict[str, int] = {}
 
     def __init__(self) -> None:
         self._instructions: Dict[str, callable] = {"load": self.manage_load,
@@ -61,14 +62,13 @@ class Assembler:
             replaced_lines.append(value)
 
 
+
+        self.label_dictionary = label_dict
         output: List[int] = []
 
         for line in replaced_lines:
             line = line.strip()
             instruction = line.split(' ')
-            for i in range(1, 4):
-                if instruction[i] in label_dict:
-                    instruction[i] = label_dict[instruction[i]]
             output = output + self._instructions[instruction[0]](instruction)
 
         return output
@@ -106,6 +106,11 @@ class Assembler:
             op = 15
 
         info = instruction[1].split(",")
+        
+        #Check for labels:
+        if info[1] in self.label_dictionary:
+            info[1] = hex(self.label_dictionary[info[1]]*2)[2:]
+        
         return [op*16+int(info[0][1], 16), int(info[1], 16)]
     
     def manage_store(self, instruction):
@@ -116,15 +121,22 @@ class Assembler:
         return [3*16 + int(info[0][1], 16), int(info[1][1:3], 16)]
     
     def manage_load(self, instruction):
-        info = instruction[1].split(",")
-        #2
-        if not '[' in info[1]:
-            return [32 + int(info[0][1], 16), int(info[1], 16)]
+        info = instruction[1:]
 
-        
         #D  
-        if len(info[1]) == 4:
+        if len(info[1]) == 4 and '[R' in info[1]:
             return [13*16, int(info[0][1], 16)*16 + int(info[1][2], 16)]
         
+        #2
+        if not '[' in info[1]:
+            if info[1] in self.label_dictionary:
+                info[1] = hex(self.label_dictionary[ info[1] ] * 2)[2:]
+            
+            return [32 + int(info[0][1], 16), int(info[1], 16)]
+        
         #1
-        return [16 + int(info[0][1], 16), int(info[1][2:3], 16)] 
+        if info[1][1:-1] in self.label_dictionary:
+            info[1] = hex(self.label_dictionary[ info[1][1:-1] ] * 2)[2:]
+            info[1] = "[" + info[1] + "]"
+        print(instruction)
+        return [16 + int(info[0][1], 16), int(info[1][1:3], 16)] 
