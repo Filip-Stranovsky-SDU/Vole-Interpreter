@@ -14,6 +14,10 @@ _loop:
 addi R1,R1,R6 //add value to total
 addi R8,R8,R7 //Increment the counter
 jmpEq R8=R0,_exitLoop
+
+
+
+
 jmp _loop
 
  _exitLoop  : store R1,[$A3]
